@@ -15,6 +15,7 @@ Circuit documentation for residential properties. Anonymous property codes prote
 - [Circuit Lookup](https://g-shudy.github.io/electrical-docs/app/lookup.html) - NFC tags link here
 - [Panel View](https://g-shudy.github.io/electrical-docs/app/panel.html) - Full panel schedules
 - [Search](https://g-shudy.github.io/electrical-docs/app/search.html) - Find by room/description
+- [Add Circuit](https://g-shudy.github.io/electrical-docs/app/add.html) - Mobile-friendly data entry
 
 ## NFC Tag Format
 
@@ -54,9 +55,15 @@ docs/
 
 ## For Contributors
 
-Each property owner can update their own `data/XX.json` file via PR or direct edit.
+### Easy Way: Mobile Form (Recommended)
 
-### Adding a Circuit
+1. Open [Add Circuit](https://g-shudy.github.io/electrical-docs/app/add.html) on your phone
+2. Fill in the circuit details
+3. Tap "Submit for Review"
+4. Confirm on GitHub (creates an issue)
+5. Bot automatically validates and adds to the database
+
+### Manual Way: Edit JSON
 
 Edit your property's JSON file and add to the `circuits` array:
 

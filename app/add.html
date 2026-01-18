@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add Circuit</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 0.25rem;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 0.75rem;
+      font-size: 1rem;
+      border: 2px solid var(--secondary);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--text);
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .row-3 {
+      grid-template-columns: 1fr 1fr 1fr;
+    }
+
+    button {
+      width: 100%;
+      padding: 1rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 1rem;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    .helper {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+    }
+
+    .preview {
+      background: var(--surface);
+      border-radius: 8px;
+      padding: 1rem;
+      margin-top: 1.5rem;
+      font-family: 'SF Mono', Menlo, monospace;
+      font-size: 0.85rem;
+      white-space: pre-wrap;
+      display: none;
+    }
+
+    .preview.show {
+      display: block;
+    }
+
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .checkbox-group input {
+      width: auto;
+    }
+
+    .section-title {
+      font-size: 1rem;
+      color: var(--primary);
+      margin: 1.5rem 0 0.75rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--secondary);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="search.html">Search</a>
+      <a href="lookup.html">Lookup</a>
+    </nav>
+
+    <h1>Add Circuit</h1>
+    <p style="color: var(--text-muted); margin-bottom: 1.5rem;">
+      Fill in circuit details. This creates a GitHub Issue for review.
+    </p>
+
+    <form id="circuit-form">
+      <!-- Property & Panel -->
+      <div class="row">
+        <div class="form-group">
+          <label for="property">Property *</label>
+          <select id="property" required>
+            <option value="">Select...</option>
+            <option value="28">28</option>
+            <option value="14">14</option>
+            <option value="17">17</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="panel">Panel *</label>
+          <select id="panel" required>
+            <option value="">Select...</option>
+            <option value="M">M - Main</option>
+            <option value="S1">S1 - Sub-panel 1</option>
+            <option value="S2">S2 - Sub-panel 2</option>
+            <option value="G">G - Garage</option>
+            <option value="E">E - Emergency</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Breaker Info -->
+      <div class="section-title">Breaker</div>
+
+      <div class="row row-3">
+        <div class="form-group">
+          <label for="breaker">Breaker # *</label>
+          <input type="number" id="breaker" min="1" max="42" required>
+        </div>
+
+        <div class="form-group">
+          <label for="amps">Amps *</label>
+          <select id="amps" required>
+            <option value="">...</option>
+            <option value="15">15A</option>
+            <option value="20">20A</option>
+            <option value="30">30A</option>
+            <option value="40">40A</option>
+            <option value="50">50A</option>
+            <option value="60">60A</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="poles">Poles *</label>
+          <select id="poles" required>
+            <option value="1">1 (120V)</option>
+            <option value="2">2 (240V)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div class="section-title">Description</div>
+
+      <div class="form-group">
+        <label for="description">Description *</label>
+        <input type="text" id="description" placeholder="e.g., Kitchen Counter East" required>
+        <div class="helper">Room + location + what it powers</div>
+      </div>
+
+      <div class="form-group">
+        <label for="rooms">Rooms (comma-separated)</label>
+        <input type="text" id="rooms" placeholder="e.g., KIT, DIN">
+        <div class="helper">KIT, LIV, DIN, MBR, MBA, BR2, BR3, BA2, GAR, BSM, EXT, HAL</div>
+      </div>
+
+      <!-- Technical -->
+      <div class="section-title">Technical Details</div>
+
+      <div class="row">
+        <div class="form-group">
+          <label for="wire">Wire Gauge</label>
+          <select id="wire">
+            <option value="">Unknown</option>
+            <option value="14/2">14/2</option>
+            <option value="12/2">12/2</option>
+            <option value="12/3">12/3</option>
+            <option value="10/2">10/2</option>
+            <option value="10/3">10/3</option>
+            <option value="8/3">8/3</option>
+            <option value="6/3">6/3</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="protection">Protection</label>
+          <select id="protection">
+            <option value="None">None</option>
+            <option value="GFCI-Breaker">GFCI Breaker</option>
+            <option value="GFCI-Outlet">GFCI Outlet</option>
+            <option value="AFCI">AFCI</option>
+            <option value="Dual">Dual AFCI/GFCI</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="form-group">
+          <label for="type">Circuit Type</label>
+          <select id="type">
+            <option value="General">General</option>
+            <option value="Dedicated">Dedicated</option>
+            <option value="MWBC">MWBC</option>
+            <option value="Spare">Spare</option>
+          </select>
+        </div>
+
+        <div class="form-group" style="padding-top: 1.5rem;">
+          <div class="checkbox-group">
+            <input type="checkbox" id="critical">
+            <label for="critical" style="margin: 0;">Critical load</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notes -->
+      <div class="form-group">
+        <label for="notes">Notes</label>
+        <textarea id="notes" rows="2" placeholder="Any additional details..."></textarea>
+      </div>
+
+      <button type="submit">Submit for Review</button>
+    </form>
+
+    <div class="preview" id="preview"></div>
+  </div>
+
+  <script>
+    const REPO_OWNER = 'g-shudy';
+    const REPO_NAME = 'electrical-docs';
+
+    function getFormData() {
+      const property = document.getElementById('property').value;
+      const panel = document.getElementById('panel').value;
+      const breaker = document.getElementById('breaker').value;
+
+      return {
+        id: `${property}-${panel}-${breaker}`,
+        property,
+        panel,
+        breaker: parseInt(breaker),
+        amps: parseInt(document.getElementById('amps').value),
+        poles: parseInt(document.getElementById('poles').value),
+        description: document.getElementById('description').value.trim(),
+        rooms: document.getElementById('rooms').value.split(',').map(r => r.trim().toUpperCase()).filter(r => r),
+        wire: document.getElementById('wire').value || null,
+        protection: document.getElementById('protection').value,
+        type: document.getElementById('type').value,
+        critical: document.getElementById('critical').checked,
+        notes: document.getElementById('notes').value.trim() || null
+      };
+    }
+
+    function generateIssueBody(data) {
+      return `## Circuit Data
+
+\`\`\`json
+${JSON.stringify(data, null, 2)}
+\`\`\`
+
+---
+**Submitted via mobile form**
+`;
+    }
+
+    document.getElementById('circuit-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const data = getFormData();
+      const title = `Circuit: ${data.id} - ${data.description}`;
+      const body = generateIssueBody(data);
+
+      // Create GitHub issue URL with pre-filled data
+      const issueUrl = new URL(`https://github.com/${REPO_OWNER}/${REPO_NAME}/issues/new`);
+      issueUrl.searchParams.set('title', title);
+      issueUrl.searchParams.set('body', body);
+      issueUrl.searchParams.set('labels', 'circuit-data');
+
+      // Show preview
+      const preview = document.getElementById('preview');
+      preview.textContent = `Opening GitHub to create issue...\n\nCircuit ID: ${data.id}\n\nIf the page doesn't open, copy this URL:\n${issueUrl.toString().substring(0, 100)}...`;
+      preview.classList.add('show');
+
+      // Open GitHub issue page
+      window.open(issueUrl.toString(), '_blank');
+    });
+
+    // Auto-generate circuit ID preview
+    ['property', 'panel', 'breaker'].forEach(id => {
+      document.getElementById(id).addEventListener('change', () => {
+        const p = document.getElementById('property').value;
+        const pnl = document.getElementById('panel').value;
+        const b = document.getElementById('breaker').value;
+        if (p && pnl && b) {
+          document.querySelector('h1').textContent = `Add Circuit: ${p}-${pnl}-${b}`;
+        }
+      });
+    });
+  </script>
+</body>
+</html>

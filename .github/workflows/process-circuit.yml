@@ -1,0 +1,216 @@
+name: Process Circuit Data
+
+on:
+  issues:
+    types: [labeled]
+
+jobs:
+  process:
+    if: github.event.label.name == 'circuit-data'
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      issues: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Process circuit data
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            // Get issue body
+            const issueBody = context.payload.issue.body;
+            const issueNumber = context.payload.issue.number;
+            const issueTitle = context.payload.issue.title;
+
+            console.log('Processing issue:', issueTitle);
+
+            // Extract JSON from issue body
+            const jsonMatch = issueBody.match(/```json\n([\s\S]*?)\n```/);
+            if (!jsonMatch) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issueNumber,
+                body: '❌ **Error:** Could not find JSON data in issue body.\n\nPlease use the circuit submission form.'
+              });
+              return;
+            }
+
+            let circuitData;
+            try {
+              circuitData = JSON.parse(jsonMatch[1]);
+            } catch (e) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issueNumber,
+                body: `❌ **Error:** Invalid JSON data.\n\n\`\`\`\n${e.message}\n\`\`\``
+              });
+              return;
+            }
+
+            // Validate required fields
+            const required = ['id', 'property', 'panel', 'breaker', 'amps', 'poles', 'description'];
+            const missing = required.filter(f => !circuitData[f]);
+
+            if (missing.length > 0) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issueNumber,
+                body: `❌ **Error:** Missing required fields: ${missing.join(', ')}`
+              });
+              return;
+            }
+
+            // Validate data types
+            const errors = [];
+
+            if (typeof circuitData.breaker !== 'number' || circuitData.breaker < 1 || circuitData.breaker > 42) {
+              errors.push('Breaker must be a number between 1 and 42');
+            }
+
+            if (![15, 20, 30, 40, 50, 60, 70, 100].includes(circuitData.amps)) {
+              errors.push('Amps must be 15, 20, 30, 40, 50, 60, 70, or 100');
+            }
+
+            if (![1, 2].includes(circuitData.poles)) {
+              errors.push('Poles must be 1 or 2');
+            }
+
+            if (!['28', '14', '17'].includes(circuitData.property)) {
+              errors.push('Property must be 28, 14, or 17');
+            }
+
+            if (!['M', 'S1', 'S2', 'G', 'E', 'P'].includes(circuitData.panel)) {
+              errors.push('Panel must be M, S1, S2, G, E, or P');
+            }
+
+            // Basic sanity checks
+            if (circuitData.amps === 20 && circuitData.wire === '14/2') {
+              errors.push('⚠️ Warning: 20A breaker with 14/2 wire may be a code violation (14 AWG is rated for 15A)');
+            }
+
+            if (circuitData.poles === 2 && circuitData.amps < 20) {
+              errors.push('⚠️ Warning: 240V circuit with less than 20A is unusual');
+            }
+
+            if (errors.length > 0) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issueNumber,
+                body: `⚠️ **Validation Issues:**\n\n${errors.map(e => `- ${e}`).join('\n')}\n\nPlease review and resubmit, or a maintainer will review manually.`
+              });
+              // Don't auto-close - let maintainer decide
+              return;
+            }
+
+            // Load property file
+            const propertyFile = `data/${circuitData.property}.json`;
+            let propertyData;
+
+            try {
+              const content = fs.readFileSync(propertyFile, 'utf8');
+              propertyData = JSON.parse(content);
+            } catch (e) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issueNumber,
+                body: `❌ **Error:** Could not load property file: ${propertyFile}`
+              });
+              return;
+            }
+
+            // Find or create panel
+            let panel = propertyData.panels.find(p => p.id === circuitData.panel);
+            if (!panel) {
+              panel = {
+                id: circuitData.panel,
+                name: {
+                  'M': 'Main Panel',
+                  'S1': 'Sub-panel 1',
+                  'S2': 'Sub-panel 2',
+                  'G': 'Garage Panel',
+                  'E': 'Emergency Panel',
+                  'P': 'Pool Panel'
+                }[circuitData.panel] || circuitData.panel,
+                location: 'TBD',
+                circuits: []
+              };
+              propertyData.panels.push(panel);
+            }
+
+            // Check for duplicate
+            const existingIndex = panel.circuits.findIndex(c => c.breaker === circuitData.breaker);
+            if (existingIndex >= 0) {
+              // Update existing
+              panel.circuits[existingIndex] = {
+                id: circuitData.id,
+                breaker: circuitData.breaker,
+                amps: circuitData.amps,
+                poles: circuitData.poles,
+                description: circuitData.description,
+                rooms: circuitData.rooms || [],
+                wire: circuitData.wire,
+                protection: circuitData.protection || 'None',
+                type: circuitData.type || 'General',
+                critical: circuitData.critical || false,
+                notes: circuitData.notes,
+                verified: new Date().toISOString().split('T')[0]
+              };
+            } else {
+              // Add new
+              panel.circuits.push({
+                id: circuitData.id,
+                breaker: circuitData.breaker,
+                amps: circuitData.amps,
+                poles: circuitData.poles,
+                description: circuitData.description,
+                rooms: circuitData.rooms || [],
+                wire: circuitData.wire,
+                protection: circuitData.protection || 'None',
+                type: circuitData.type || 'General',
+                critical: circuitData.critical || false,
+                notes: circuitData.notes,
+                verified: new Date().toISOString().split('T')[0]
+              });
+            }
+
+            // Sort circuits by breaker number
+            panel.circuits.sort((a, b) => a.breaker - b.breaker);
+
+            // Write updated file
+            fs.writeFileSync(propertyFile, JSON.stringify(propertyData, null, 2) + '\n');
+
+            // Commit changes
+            const { execSync } = require('child_process');
+            execSync('git config user.name "Circuit Bot"');
+            execSync('git config user.email "bot@electrical-docs"');
+            execSync(`git add ${propertyFile}`);
+
+            const action = existingIndex >= 0 ? 'Updated' : 'Added';
+            execSync(`git commit -m "${action} circuit ${circuitData.id} from issue #${issueNumber}"`);
+            execSync('git push');
+
+            // Close issue with success message
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              body: `✅ **Success!** ${action} circuit \`${circuitData.id}\`\n\n**Details:**\n- Description: ${circuitData.description}\n- ${circuitData.amps}A, ${circuitData.poles === 2 ? '240V' : '120V'}\n- Protection: ${circuitData.protection || 'None'}\n\n[View in app](https://g-shudy.github.io/electrical-docs/app/lookup.html?c=${circuitData.id})`
+            });
+
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              state: 'closed'
+            });
