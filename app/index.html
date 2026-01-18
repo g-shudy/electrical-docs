@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Electrical Docs</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Electrical Documentation</h1>
+
+    <nav>
+      <a href="search.html">Search</a>
+      <a href="../docs/field-guide.md">Field Guide</a>
+      <a href="https://github.com/g-shudy/electrical-docs">GitHub</a>
+    </nav>
+
+    <h2>Properties</h2>
+    <div class="property-grid" id="properties">
+      <div class="loading">Loading...</div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    async function init() {
+      const container = document.getElementById('properties');
+      const properties = await loadAllProperties();
+
+      let html = '';
+      for (const [code, data] of Object.entries(properties)) {
+        const circuitCount = data?.panels?.reduce((sum, p) => sum + (p.circuits?.length || 0), 0) || 0;
+        const panelCount = data?.panels?.length || 0;
+        const status = circuitCount > 0 ? `${panelCount} panel(s), ${circuitCount} circuits` : 'Not documented';
+
+        html += `
+          <a href="panel.html?p=${code}" class="property-card">
+            <div class="property-code">${code}</div>
+            <div class="property-status">${status}</div>
+          </a>
+        `;
+      }
+
+      container.innerHTML = html;
+    }
+
+    init();
+  </script>
+</body>
+</html>

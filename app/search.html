@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Search Circuits</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="lookup.html">Lookup</a>
+    </nav>
+
+    <h1>Search Circuits</h1>
+
+    <input type="text"
+           class="search-box"
+           id="search-input"
+           placeholder="Search by room, description, circuit ID..."
+           autofocus>
+
+    <div id="results"></div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    let searchTimeout = null;
+
+    async function doSearch(query) {
+      const container = document.getElementById('results');
+
+      if (!query || query.length < 2) {
+        container.innerHTML = '<p style="color: var(--text-muted);">Type at least 2 characters to search</p>';
+        return;
+      }
+
+      container.innerHTML = '<div class="loading">Searching...</div>';
+
+      const results = await searchCircuits(query);
+
+      if (results.length === 0) {
+        container.innerHTML = `<p>No circuits found for "${query}"</p>`;
+        return;
+      }
+
+      let html = `<p style="margin-bottom: 1rem; color: var(--text-muted);">${results.length} result(s)</p>`;
+
+      for (const { property, panel, circuit } of results) {
+        html += renderCircuitCard(circuit, panel, property);
+      }
+
+      container.innerHTML = html;
+    }
+
+    document.getElementById('search-input').addEventListener('input', (e) => {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => {
+        doSearch(e.target.value.trim());
+      }, 300);
+    });
+
+    // Check for query param
+    const q = getParam('q');
+    if (q) {
+      document.getElementById('search-input').value = q;
+      doSearch(q);
+    }
+  </script>
+</body>
+</html>

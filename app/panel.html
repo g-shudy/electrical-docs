@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel Schedule</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="search.html">Search</a>
+    </nav>
+
+    <div id="content">
+      <div class="loading">Loading...</div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    async function init() {
+      const container = document.getElementById('content');
+      const param = getParam('p');
+
+      if (!param) {
+        container.innerHTML = `
+          <h1>Panel Schedule</h1>
+          <p>Select a property from the <a href="index.html">home page</a>.</p>
+        `;
+        return;
+      }
+
+      // Parse param: could be "28" (property) or "28-M" (specific panel)
+      const parts = param.split('-');
+      const propertyCode = parts[0];
+      const panelId = parts[1] || null;
+
+      const property = await loadProperty(propertyCode);
+
+      if (!property) {
+        container.innerHTML = `<div class="error">Property ${propertyCode} not found</div>`;
+        return;
+      }
+
+      let html = `<h1>Property ${property.property}</h1>`;
+
+      if (property.service_size) {
+        html += `<p>Service: ${property.service_size}</p>`;
+      }
+
+      const panelsToShow = panelId
+        ? property.panels.filter(p => p.id === panelId)
+        : property.panels;
+
+      if (panelsToShow.length === 0) {
+        html += `<p>No panels documented yet.</p>`;
+      }
+
+      for (const panel of panelsToShow) {
+        html += `
+          <h2>${panel.name} (${panel.id})</h2>
+          <div class="panel-info">
+            <strong>Location:</strong> ${panel.location || 'TBD'} &bull;
+            <strong>Capacity:</strong> ${panel.amps || '?'}A &bull;
+            <strong>Fed from:</strong> ${panel.fed_from || 'TBD'}
+          </div>
+        `;
+
+        if (panel.circuits.length === 0) {
+          html += `<p>No circuits documented yet.</p>`;
+          continue;
+        }
+
+        // Sort by breaker number
+        const sortedCircuits = [...panel.circuits].sort((a, b) => a.breaker - b.breaker);
+
+        html += `
+          <table class="panel-schedule">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>A</th>
+                <th>Description</th>
+                <th>Prot</th>
+              </tr>
+            </thead>
+            <tbody>
+        `;
+
+        for (const circuit of sortedCircuits) {
+          const protection = circuit.protection === 'None' ? '' : circuit.protection || '';
+          const critical = circuit.critical ? ' *' : '';
+
+          html += `
+            <tr onclick="window.location='lookup.html?c=${circuit.id}'" style="cursor: pointer;">
+              <td class="breaker-num">${circuit.breaker}</td>
+              <td>${circuit.amps}</td>
+              <td>${circuit.description}${critical}</td>
+              <td>${protection}</td>
+            </tr>
+          `;
+        }
+
+        html += `</tbody></table>`;
+      }
+
+      // Show other panels link if viewing single panel
+      if (panelId && property.panels.length > 1) {
+        html += `<p style="margin-top: 1rem;"><a href="?p=${propertyCode}">View all panels for property ${propertyCode}</a></p>`;
+      }
+
+      container.innerHTML = html;
+    }
+
+    init();
+  </script>
+</body>
+</html>

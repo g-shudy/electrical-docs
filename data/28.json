@@ -1,0 +1,50 @@
+{
+  "property": "28",
+  "name": "Property 28",
+  "service_size": "200A",
+  "last_audit": null,
+  "notes": "",
+  "panels": [
+    {
+      "id": "M",
+      "name": "Main Panel",
+      "location": "Garage",
+      "amps": 200,
+      "fed_from": "Utility",
+      "total_spaces": 24,
+      "circuits": [
+        {
+          "id": "28-M-1",
+          "breaker": 1,
+          "amps": 15,
+          "poles": 1,
+          "description": "Example - Living Room Lights",
+          "rooms": ["LIV"],
+          "wire": "14/2",
+          "protection": "AFCI",
+          "type": "General",
+          "critical": false,
+          "smart_neutral": true,
+          "verified": null,
+          "notes": "Sample data - replace during mapping"
+        },
+        {
+          "id": "28-M-2",
+          "breaker": 2,
+          "amps": 20,
+          "poles": 1,
+          "description": "Example - Kitchen Refrigerator",
+          "rooms": ["KIT"],
+          "wire": "12/2",
+          "protection": "None",
+          "type": "Dedicated",
+          "critical": true,
+          "smart_neutral": false,
+          "verified": null,
+          "notes": "Dedicated circuit - sample data"
+        }
+      ]
+    }
+  ],
+  "maintenance": []
+}

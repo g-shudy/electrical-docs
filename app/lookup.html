@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Circuit Lookup</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="search.html">Search</a>
+    </nav>
+
+    <div id="content">
+      <div class="loading">Loading circuit...</div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    async function init() {
+      const container = document.getElementById('content');
+      const circuitId = getParam('c');
+
+      if (!circuitId) {
+        container.innerHTML = `
+          <h1>Circuit Lookup</h1>
+          <p>Enter a circuit ID to look up:</p>
+          <input type="text" class="search-box" id="circuit-input" placeholder="e.g., 28-M-12">
+          <p style="margin-top: 1rem; color: var(--text-muted);">
+            Or scan an NFC tag to be redirected here automatically.
+          </p>
+        `;
+
+        document.getElementById('circuit-input').addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') {
+            const id = e.target.value.trim().toUpperCase();
+            if (id) window.location.href = `?c=${id}`;
+          }
+        });
+        return;
+      }
+
+      const result = await findCircuit(circuitId);
+
+      if (!result) {
+        container.innerHTML = `
+          <div class="error">
+            <strong>Circuit not found:</strong> ${circuitId}
+            <p style="margin-top: 0.5rem;">This circuit may not be documented yet.</p>
+          </div>
+          <p style="margin-top: 1rem;"><a href="index.html">Browse properties</a></p>
+        `;
+        return;
+      }
+
+      const { property, panel, circuit } = result;
+
+      container.innerHTML = `
+        <h1>Circuit Details</h1>
+        ${renderPanelInfo(panel, property)}
+        ${renderCircuitCard(circuit, panel, property)}
+        <p style="margin-top: 1rem;">
+          <a href="panel.html?p=${property.property}-${panel.id}">View full panel schedule</a>
+        </p>
+      `;
+    }
+
+    init();
+  </script>
+</body>
+</html>
