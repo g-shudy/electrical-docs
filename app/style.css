@@ -96,6 +96,13 @@ h2 {
 .tag.critical { background: var(--danger); }
 .tag.room { background: #4a044e; }
 
+.circuit-breaker-model {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-family: 'SF Mono', Menlo, monospace;
+  margin-top: 0.5rem;
+}
+
 .circuit-notes {
   font-size: 0.9rem;
   color: var(--text-muted);
@@ -103,6 +110,11 @@ h2 {
   margin-top: 0.5rem;
   padding-top: 0.5rem;
   border-top: 1px solid var(--secondary);
+}
+
+.tag.slot {
+  background: #374151;
+  font-family: 'SF Mono', Menlo, monospace;
 }
 
 /* Panel info */

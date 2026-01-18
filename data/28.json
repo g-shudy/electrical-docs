@@ -11,13 +11,19 @@
       "location": "Garage",
       "amps": 200,
       "fed_from": "Utility",
-      "total_spaces": 24,
+      "total_spaces": 40,
+      "manufacturer": null,
+      "model": null,
+      "series": null,
+      "bus_rating": null,
       "circuits": [
         {
           "id": "28-M-1",
           "breaker": 1,
           "amps": 15,
           "poles": 1,
+          "slots": "1",
+          "breaker_model": null,
           "description": "Example - Living Room Lights",
           "rooms": [
             "LIV"
@@ -35,6 +41,8 @@
           "breaker": 2,
           "amps": 20,
           "poles": 1,
+          "slots": "2",
+          "breaker_model": null,
           "description": "Example - Kitchen Refrigerator",
           "rooms": [
             "KIT"

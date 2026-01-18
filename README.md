@@ -13,7 +13,8 @@ Circuit documentation for residential properties. Anonymous property codes prote
 ## Quick Links
 
 - [Circuit Lookup](https://g-shudy.github.io/electrical-docs/app/lookup.html) - NFC tags link here
-- [Panel View](https://g-shudy.github.io/electrical-docs/app/panel.html) - Full panel schedules
+- [Panel Schedule](https://g-shudy.github.io/electrical-docs/app/panel.html) - Tabular panel schedules
+- [Panel Layout](https://g-shudy.github.io/electrical-docs/app/layout.html) - Visual panel representation
 - [Search](https://g-shudy.github.io/electrical-docs/app/search.html) - Find by room/description
 - [Add Circuit](https://g-shudy.github.io/electrical-docs/app/add.html) - Mobile-friendly data entry
 
@@ -32,6 +33,24 @@ Property (28, 14, 17)
         └── Circuit (breaker number)
               └── Device (optional, per-outlet detail)
 ```
+
+### Panel Fields
+
+| Field | Description |
+|-------|-------------|
+| manufacturer | Panel brand (Square D, Siemens, Eaton, etc.) |
+| model | Model number from panel label |
+| series | Product line (QO, Homeline, etc.) |
+| total_spaces | Number of breaker slots |
+| bus_rating | Bus bar amperage rating |
+
+### Circuit Fields
+
+| Field | Description |
+|-------|-------------|
+| slots | Slot position(s): "1", "1/3" (double-pole), "7A" (tandem) |
+| breaker_model | Breaker catalog number (e.g., QO115CAFI) |
+| protection | Protection type: None, GFCI, AFCI, Dual |
 
 ## Files
 

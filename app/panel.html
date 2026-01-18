@@ -59,14 +59,32 @@
         html += `<p>No panels documented yet.</p>`;
       }
 
+      // View toggle
+      html += `
+        <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+          <button onclick="window.location='panel.html?p=${param}'" style="flex: 1; padding: 0.5rem; background: var(--primary); border: 2px solid var(--primary); color: white; border-radius: 6px; cursor: pointer;">Schedule View</button>
+          <button onclick="window.location='layout.html?p=${param}'" style="flex: 1; padding: 0.5rem; background: var(--surface); border: 2px solid var(--secondary); color: var(--text); border-radius: 6px; cursor: pointer;">Layout View</button>
+        </div>
+      `;
+
       for (const panel of panelsToShow) {
+        let panelMeta = `<strong>Location:</strong> ${panel.location || 'TBD'} &bull;
+            <strong>Capacity:</strong> ${panel.amps || '?'}A &bull;
+            <strong>Fed from:</strong> ${panel.fed_from || 'TBD'}`;
+
+        if (panel.manufacturer || panel.model) {
+          panelMeta += ` &bull; <strong>Model:</strong> `;
+          if (panel.manufacturer) panelMeta += panel.manufacturer;
+          if (panel.model) panelMeta += ` ${panel.model}`;
+        }
+
+        if (panel.total_spaces) {
+          panelMeta += ` &bull; <strong>Spaces:</strong> ${panel.total_spaces}`;
+        }
+
         html += `
           <h2>${panel.name} (${panel.id})</h2>
-          <div class="panel-info">
-            <strong>Location:</strong> ${panel.location || 'TBD'} &bull;
-            <strong>Capacity:</strong> ${panel.amps || '?'}A &bull;
-            <strong>Fed from:</strong> ${panel.fed_from || 'TBD'}
-          </div>
+          <div class="panel-info">${panelMeta}</div>
         `;
 
         if (panel.circuits.length === 0) {
@@ -81,7 +99,7 @@
           <table class="panel-schedule">
             <thead>
               <tr>
-                <th>#</th>
+                <th>Slot</th>
                 <th>A</th>
                 <th>Description</th>
                 <th>Prot</th>
@@ -93,10 +111,11 @@
         for (const circuit of sortedCircuits) {
           const protection = circuit.protection === 'None' ? '' : circuit.protection || '';
           const critical = circuit.critical ? ' *' : '';
+          const slotDisplay = circuit.slots || circuit.breaker;
 
           html += `
             <tr onclick="window.location='lookup.html?c=${circuit.id}'" style="cursor: pointer;">
-              <td class="breaker-num">${circuit.breaker}</td>
+              <td class="breaker-num">${slotDisplay}</td>
               <td>${circuit.amps}</td>
               <td>${circuit.description}${critical}</td>
               <td>${protection}</td>

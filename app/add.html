@@ -144,7 +144,7 @@
       <div class="row row-3">
         <div class="form-group">
           <label for="breaker">Breaker # *</label>
-          <input type="number" id="breaker" min="1" max="42" required>
+          <input type="number" id="breaker" min="1" max="42" required onchange="updateSlots()">
         </div>
 
         <div class="form-group">
@@ -162,10 +162,24 @@
 
         <div class="form-group">
           <label for="poles">Poles *</label>
-          <select id="poles" required>
+          <select id="poles" required onchange="updateSlots()">
             <option value="1">1 (120V)</option>
             <option value="2">2 (240V)</option>
           </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="form-group">
+          <label for="slots">Slot Position</label>
+          <input type="text" id="slots" placeholder="e.g., 1 or 1/3">
+          <div class="helper">Single: 1 | Double-pole: 1/3 | Tandem: 7A</div>
+        </div>
+
+        <div class="form-group">
+          <label for="breaker_model">Breaker Model</label>
+          <input type="text" id="breaker_model" placeholder="e.g., QO115CAFI">
+          <div class="helper">Model number from breaker label</div>
         </div>
       </div>
 
@@ -253,6 +267,8 @@
       const property = document.getElementById('property').value;
       const panel = document.getElementById('panel').value;
       const breaker = document.getElementById('breaker').value;
+      const poles = parseInt(document.getElementById('poles').value);
+      const slots = document.getElementById('slots').value.trim() || String(breaker);
 
       return {
         id: `${property}-${panel}-${breaker}`,
@@ -260,7 +276,9 @@
         panel,
         breaker: parseInt(breaker),
         amps: parseInt(document.getElementById('amps').value),
-        poles: parseInt(document.getElementById('poles').value),
+        poles: poles,
+        slots: slots,
+        breaker_model: document.getElementById('breaker_model').value.trim() || null,
         description: document.getElementById('description').value.trim(),
         rooms: document.getElementById('rooms').value.split(',').map(r => r.trim().toUpperCase()).filter(r => r),
         wire: document.getElementById('wire').value || null,
@@ -269,6 +287,24 @@
         critical: document.getElementById('critical').checked,
         notes: document.getElementById('notes').value.trim() || null
       };
+    }
+
+    function updateSlots() {
+      const breaker = document.getElementById('breaker').value;
+      const poles = document.getElementById('poles').value;
+      const slotsInput = document.getElementById('slots');
+
+      if (breaker && poles === '2') {
+        // Auto-suggest double-pole slot format
+        const b = parseInt(breaker);
+        if (b % 2 === 1) {
+          slotsInput.placeholder = `e.g., ${b}/${b+2}`;
+        } else {
+          slotsInput.placeholder = `e.g., ${b-2}/${b}`;
+        }
+      } else {
+        slotsInput.placeholder = 'e.g., 1 or 1/3';
+      }
     }
 
     function generateIssueBody(data) {

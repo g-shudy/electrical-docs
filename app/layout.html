@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel Layout</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .panel-container {
+      max-width: 400px;
+      margin: 0 auto;
+    }
+
+    .panel-header {
+      background: var(--surface);
+      border-radius: 8px 8px 0 0;
+      padding: 1rem;
+      border: 2px solid var(--secondary);
+      border-bottom: none;
+    }
+
+    .panel-header h2 {
+      margin: 0 0 0.5rem 0;
+      font-size: 1.1rem;
+    }
+
+    .panel-meta {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .panel-meta span {
+      display: inline-block;
+      margin-right: 1rem;
+    }
+
+    .panel-body {
+      background: #1a1a1a;
+      border: 2px solid var(--secondary);
+      border-radius: 0 0 8px 8px;
+      padding: 0.5rem;
+    }
+
+    .main-breaker {
+      background: #2d2d2d;
+      border: 2px solid #444;
+      border-radius: 4px;
+      padding: 0.75rem;
+      text-align: center;
+      margin-bottom: 0.5rem;
+      cursor: pointer;
+    }
+
+    .main-breaker:hover {
+      border-color: var(--primary);
+    }
+
+    .main-breaker .label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .main-breaker .amps {
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+
+    .breaker-grid {
+      display: grid;
+      grid-template-columns: 1fr 20px 1fr;
+      gap: 4px;
+    }
+
+    .center-bar {
+      background: linear-gradient(to bottom, #333, #222);
+      border-radius: 2px;
+    }
+
+    .slot {
+      background: #2d2d2d;
+      border: 2px solid #444;
+      border-radius: 4px;
+      padding: 0.5rem 0.4rem;
+      min-height: 40px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .slot:hover {
+      border-color: var(--primary);
+      background: #333;
+    }
+
+    .slot.empty {
+      background: #1a1a1a;
+      border-style: dashed;
+      opacity: 0.5;
+    }
+
+    .slot.double {
+      grid-row: span 2;
+      min-height: 88px;
+    }
+
+    .slot.tandem .slot-num {
+      font-size: 0.65rem;
+    }
+
+    .slot-num {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    .slot-amps {
+      font-size: 1rem;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .slot-desc {
+      font-size: 0.65rem;
+      text-align: center;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Protection type colors */
+    .slot.gfci { border-color: #4CAF50; }
+    .slot.afci { border-color: #2196F3; }
+    .slot.dual { border-color: #9C27B0; }
+    .slot.critical { border-color: #f44336; }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-top: 1rem;
+      font-size: 0.8rem;
+      justify-content: center;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .legend-color {
+      width: 16px;
+      height: 16px;
+      border-radius: 3px;
+      border: 2px solid;
+    }
+
+    .legend-color.gfci { border-color: #4CAF50; background: #1a1a1a; }
+    .legend-color.afci { border-color: #2196F3; background: #1a1a1a; }
+    .legend-color.dual { border-color: #9C27B0; background: #1a1a1a; }
+    .legend-color.critical { border-color: #f44336; background: #1a1a1a; }
+    .legend-color.empty { border-color: #444; border-style: dashed; background: #1a1a1a; }
+
+    .circuit-popup {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: var(--surface);
+      border: 2px solid var(--primary);
+      border-radius: 12px;
+      padding: 1.5rem;
+      z-index: 100;
+      max-width: 90%;
+      width: 350px;
+    }
+
+    .circuit-popup.show {
+      display: block;
+    }
+
+    .circuit-popup-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 99;
+    }
+
+    .circuit-popup-overlay.show {
+      display: block;
+    }
+
+    .circuit-popup h3 {
+      margin: 0 0 1rem 0;
+    }
+
+    .circuit-popup .close {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.75rem;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: var(--text-muted);
+    }
+
+    .circuit-detail {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--secondary);
+    }
+
+    .circuit-detail:last-child {
+      border-bottom: none;
+    }
+
+    .circuit-detail .label {
+      color: var(--text-muted);
+    }
+
+    .view-toggle {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .view-toggle button {
+      flex: 1;
+      padding: 0.5rem;
+      background: var(--surface);
+      border: 2px solid var(--secondary);
+      color: var(--text);
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .view-toggle button.active {
+      border-color: var(--primary);
+      background: var(--primary);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="panel.html">Schedule</a>
+      <a href="search.html">Search</a>
+    </nav>
+
+    <div id="content">
+      <div class="loading">Loading panel layout...</div>
+    </div>
+  </div>
+
+  <div class="circuit-popup-overlay" id="popup-overlay"></div>
+  <div class="circuit-popup" id="popup">
+    <span class="close" id="popup-close">&times;</span>
+    <div id="popup-content"></div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    async function init() {
+      const container = document.getElementById('content');
+      const param = getParam('p');
+
+      if (!param) {
+        container.innerHTML = `
+          <h1>Panel Layout</h1>
+          <p>Select a property from the <a href="index.html">home page</a>.</p>
+        `;
+        return;
+      }
+
+      const parts = param.split('-');
+      const propertyCode = parts[0];
+      const panelId = parts[1] || null;
+
+      const property = await loadProperty(propertyCode);
+
+      if (!property) {
+        container.innerHTML = `<div class="error">Property ${propertyCode} not found</div>`;
+        return;
+      }
+
+      const panelsToShow = panelId
+        ? property.panels.filter(p => p.id === panelId)
+        : property.panels;
+
+      if (panelsToShow.length === 0) {
+        container.innerHTML = `<h1>Property ${property.property}</h1><p>No panels documented yet.</p>`;
+        return;
+      }
+
+      let html = `<h1>Property ${property.property}</h1>`;
+
+      // View toggle
+      html += `
+        <div class="view-toggle">
+          <button onclick="window.location='panel.html?p=${param}'">Schedule View</button>
+          <button class="active">Layout View</button>
+        </div>
+      `;
+
+      for (const panel of panelsToShow) {
+        html += renderPanelLayout(panel, property);
+      }
+
+      // Legend
+      html += `
+        <div class="legend">
+          <div class="legend-item"><div class="legend-color gfci"></div> GFCI</div>
+          <div class="legend-item"><div class="legend-color afci"></div> AFCI</div>
+          <div class="legend-item"><div class="legend-color dual"></div> Dual</div>
+          <div class="legend-item"><div class="legend-color critical"></div> Critical</div>
+          <div class="legend-item"><div class="legend-color empty"></div> Empty</div>
+        </div>
+      `;
+
+      container.innerHTML = html;
+      setupPopup();
+    }
+
+    function renderPanelLayout(panel, property) {
+      const totalSpaces = panel.total_spaces || 24;
+      const rows = totalSpaces / 2;
+
+      // Build slot map: slotNum -> circuit
+      const slotMap = {};
+      const occupiedSlots = new Set();
+
+      for (const circuit of panel.circuits) {
+        const slots = circuit.slots || String(circuit.breaker);
+
+        // Handle different slot formats: "1", "1/3", "7A", "7A/7B"
+        if (slots.includes('/')) {
+          // Double-pole or tandem pair
+          const [s1, s2] = slots.split('/');
+          slotMap[s1] = circuit;
+          slotMap[s2] = circuit;
+          occupiedSlots.add(s1);
+          occupiedSlots.add(s2);
+        } else {
+          slotMap[slots] = circuit;
+          occupiedSlots.add(slots);
+        }
+      }
+
+      let html = `
+        <div class="panel-container">
+          <div class="panel-header">
+            <h2>${panel.name} (${panel.id})</h2>
+            <div class="panel-meta">
+              <span>${panel.location || 'Location TBD'}</span>
+              <span>${panel.amps || '?'}A</span>
+              ${panel.manufacturer ? `<span>${panel.manufacturer}</span>` : ''}
+              ${panel.model ? `<span>${panel.model}</span>` : ''}
+            </div>
+          </div>
+          <div class="panel-body">
+      `;
+
+      // Main breaker
+      html += `
+        <div class="main-breaker">
+          <div class="label">MAIN</div>
+          <div class="amps">${panel.amps || '?'}A</div>
+        </div>
+      `;
+
+      // Breaker grid
+      html += `<div class="breaker-grid">`;
+
+      // Track which rows we've rendered (for double-pole spanning)
+      const renderedLeft = new Set();
+      const renderedRight = new Set();
+
+      for (let row = 0; row < rows; row++) {
+        const leftSlot = row * 2 + 1;  // Odd: 1, 3, 5...
+        const rightSlot = row * 2 + 2; // Even: 2, 4, 6...
+
+        // Left column
+        if (!renderedLeft.has(row)) {
+          const leftCircuit = slotMap[String(leftSlot)];
+          if (leftCircuit) {
+            const isDouble = leftCircuit.poles === 2;
+            if (isDouble) {
+              renderedLeft.add(row);
+              renderedLeft.add(row + 1);
+            }
+            html += renderSlot(leftCircuit, leftSlot, isDouble);
+          } else {
+            html += renderEmptySlot(leftSlot);
+          }
+        }
+
+        // Center bar (only on first iteration per row)
+        if (row === 0) {
+          html += `<div class="center-bar" style="grid-row: span ${rows};"></div>`;
+        }
+
+        // Right column
+        if (!renderedRight.has(row)) {
+          const rightCircuit = slotMap[String(rightSlot)];
+          if (rightCircuit) {
+            const isDouble = rightCircuit.poles === 2;
+            if (isDouble) {
+              renderedRight.add(row);
+              renderedRight.add(row + 1);
+            }
+            html += renderSlot(rightCircuit, rightSlot, isDouble);
+          } else {
+            html += renderEmptySlot(rightSlot);
+          }
+        }
+      }
+
+      html += `</div></div></div>`;
+      return html;
+    }
+
+    function renderSlot(circuit, slotNum, isDouble) {
+      let classes = ['slot'];
+
+      if (isDouble) classes.push('double');
+      if (circuit.protection?.includes('GFCI')) classes.push('gfci');
+      else if (circuit.protection?.includes('AFCI')) classes.push('afci');
+      else if (circuit.protection === 'Dual') classes.push('dual');
+      if (circuit.critical) classes.push('critical');
+
+      const desc = circuit.description.length > 15
+        ? circuit.description.substring(0, 15) + '...'
+        : circuit.description;
+
+      return `
+        <div class="${classes.join(' ')}"
+             data-circuit-id="${circuit.id}"
+             onclick="showCircuit('${circuit.id}')">
+          <div class="slot-num">${circuit.slots || slotNum}</div>
+          <div class="slot-amps">${circuit.amps}A</div>
+          <div class="slot-desc">${desc}</div>
+        </div>
+      `;
+    }
+
+    function renderEmptySlot(slotNum) {
+      return `
+        <div class="slot empty">
+          <div class="slot-num">${slotNum}</div>
+          <div class="slot-amps">--</div>
+          <div class="slot-desc">Empty</div>
+        </div>
+      `;
+    }
+
+    function setupPopup() {
+      const overlay = document.getElementById('popup-overlay');
+      const popup = document.getElementById('popup');
+      const closeBtn = document.getElementById('popup-close');
+
+      closeBtn.onclick = () => {
+        overlay.classList.remove('show');
+        popup.classList.remove('show');
+      };
+
+      overlay.onclick = () => {
+        overlay.classList.remove('show');
+        popup.classList.remove('show');
+      };
+    }
+
+    async function showCircuit(circuitId) {
+      const result = await findCircuit(circuitId);
+      if (!result) return;
+
+      const { circuit, panel } = result;
+      const content = document.getElementById('popup-content');
+
+      content.innerHTML = `
+        <h3>${circuit.id}</h3>
+        <div class="circuit-detail">
+          <span class="label">Description</span>
+          <span>${circuit.description}</span>
+        </div>
+        <div class="circuit-detail">
+          <span class="label">Amps</span>
+          <span>${circuit.amps}A ${circuit.poles > 1 ? '(240V)' : '(120V)'}</span>
+        </div>
+        <div class="circuit-detail">
+          <span class="label">Slot(s)</span>
+          <span>${circuit.slots || circuit.breaker}</span>
+        </div>
+        ${circuit.breaker_model ? `
+        <div class="circuit-detail">
+          <span class="label">Breaker</span>
+          <span>${circuit.breaker_model}</span>
+        </div>` : ''}
+        ${circuit.wire ? `
+        <div class="circuit-detail">
+          <span class="label">Wire</span>
+          <span>${circuit.wire}</span>
+        </div>` : ''}
+        ${circuit.protection && circuit.protection !== 'None' ? `
+        <div class="circuit-detail">
+          <span class="label">Protection</span>
+          <span>${circuit.protection}</span>
+        </div>` : ''}
+        ${circuit.rooms?.length ? `
+        <div class="circuit-detail">
+          <span class="label">Rooms</span>
+          <span>${circuit.rooms.join(', ')}</span>
+        </div>` : ''}
+        ${circuit.notes ? `
+        <div class="circuit-detail">
+          <span class="label">Notes</span>
+          <span>${circuit.notes}</span>
+        </div>` : ''}
+        <p style="margin-top: 1rem; text-align: center;">
+          <a href="lookup.html?c=${circuit.id}">Full Details</a>
+        </p>
+      `;
+
+      document.getElementById('popup-overlay').classList.add('show');
+      document.getElementById('popup').classList.add('show');
+    }
+
+    init();
+  </script>
+</body>
+</html>

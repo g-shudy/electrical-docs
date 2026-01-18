@@ -88,18 +88,22 @@ function renderCircuitCard(circuit, panel, property) {
   if (isCritical) cardClass += ' critical';
   else if (isGFCI) cardClass += ' gfci';
 
+  const slotInfo = circuit.slots || circuit.breaker;
+
   return `
     <div class="${cardClass}">
       <div class="circuit-id">${circuit.id}</div>
       <div class="circuit-description">${circuit.description}</div>
       <div class="circuit-meta">
         <span class="tag amps">${circuit.amps}A</span>
+        <span class="tag slot">Slot ${slotInfo}</span>
         ${circuit.poles > 1 ? `<span class="tag">240V</span>` : ''}
         ${circuit.wire ? `<span class="tag wire">${circuit.wire}</span>` : ''}
         ${circuit.protection && circuit.protection !== 'None' ? `<span class="tag protection">${circuit.protection}</span>` : ''}
         ${isCritical ? `<span class="tag critical">CRITICAL</span>` : ''}
         ${circuit.rooms?.map(r => `<span class="tag room">${r}</span>`).join('') || ''}
       </div>
+      ${circuit.breaker_model ? `<div class="circuit-breaker-model">Breaker: ${circuit.breaker_model}</div>` : ''}
       ${circuit.notes ? `<div class="circuit-notes">${circuit.notes}</div>` : ''}
     </div>
   `;
@@ -107,13 +111,21 @@ function renderCircuitCard(circuit, panel, property) {
 
 // Render panel info bar
 function renderPanelInfo(panel, property) {
-  return `
+  let html = `
     <div class="panel-info">
       <strong>Panel:</strong> ${panel.name} (${panel.id}) &bull;
       <strong>Location:</strong> ${panel.location} &bull;
       <strong>Property:</strong> ${property.property}
-    </div>
   `;
+
+  if (panel.manufacturer || panel.model) {
+    html += ` &bull; <strong>Model:</strong> `;
+    if (panel.manufacturer) html += panel.manufacturer;
+    if (panel.model) html += ` ${panel.model}`;
+  }
+
+  html += `</div>`;
+  return html;
 }
 
 // Get URL parameter
