@@ -164,6 +164,94 @@
     .legend-color.critical { border-color: #f44336; background: #1a1a1a; }
     .legend-color.empty { border-color: #444; border-style: dashed; background: #1a1a1a; }
 
+    /* Fuse box styles */
+    .fuse-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+      gap: 8px;
+      padding: 0.5rem;
+    }
+
+    .fuse {
+      background: #2d2d2d;
+      border: 3px solid #666;
+      border-radius: 50%;
+      width: 70px;
+      height: 70px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      margin: 0 auto;
+    }
+
+    .fuse:hover {
+      border-color: var(--primary);
+      background: #333;
+    }
+
+    .fuse.empty {
+      background: #1a1a1a;
+      border-style: dashed;
+      opacity: 0.5;
+    }
+
+    .fuse.critical {
+      border-color: #f44336;
+    }
+
+    .fuse-num {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+    }
+
+    .fuse-amps {
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+
+    .fuse-desc {
+      font-size: 0.55rem;
+      color: var(--text-muted);
+      text-align: center;
+      max-width: 60px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .fuse-box-note {
+      background: var(--warning);
+      color: #000;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      margin-bottom: 0.5rem;
+      text-align: center;
+    }
+
+    .panel-type-badge {
+      display: inline-block;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      margin-left: 0.5rem;
+    }
+
+    .panel-type-badge.fuse {
+      background: var(--warning);
+      color: #000;
+    }
+
+    .panel-type-badge.breaker {
+      background: var(--success);
+      color: #000;
+    }
+
     .circuit-popup {
       display: none;
       position: fixed;
@@ -328,6 +416,85 @@
     }
 
     function renderPanelLayout(panel, property) {
+      const isFuseBox = panel.type === 'fuse';
+
+      if (isFuseBox) {
+        return renderFuseBoxLayout(panel, property);
+      }
+
+      return renderBreakerPanelLayout(panel, property);
+    }
+
+    function renderFuseBoxLayout(panel, property) {
+      const totalSpaces = panel.total_spaces || 6;
+
+      let html = `
+        <div class="panel-container">
+          <div class="panel-header">
+            <h2>${panel.name} (${panel.id}) <span class="panel-type-badge fuse">Fuse Box</span></h2>
+            <div class="panel-meta">
+              <span>${panel.location || 'Location TBD'}</span>
+              <span>${panel.amps || '?'}A</span>
+              ${panel.fuse_type ? `<span>${panel.fuse_type}</span>` : ''}
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="fuse-box-note">Fuse Box - Replace fuses with same amperage only</div>
+            <div class="fuse-grid">
+      `;
+
+      // Render existing circuits
+      for (const circuit of panel.circuits) {
+        html += renderFuse(circuit);
+      }
+
+      // Render empty slots if we know total_spaces
+      const documentedCount = panel.circuits.length;
+      if (totalSpaces > documentedCount) {
+        for (let i = documentedCount + 1; i <= totalSpaces; i++) {
+          html += renderEmptyFuse(i);
+        }
+      }
+
+      // If no circuits documented yet
+      if (panel.circuits.length === 0) {
+        html += `<p style="grid-column: 1/-1; text-align: center; color: var(--text-muted);">No fuses documented yet</p>`;
+      }
+
+      html += `</div></div></div>`;
+      return html;
+    }
+
+    function renderFuse(circuit) {
+      let classes = ['fuse'];
+      if (circuit.critical) classes.push('critical');
+
+      const desc = circuit.description.length > 12
+        ? circuit.description.substring(0, 12) + '...'
+        : circuit.description;
+
+      return `
+        <div class="${classes.join(' ')}"
+             data-circuit-id="${circuit.id}"
+             onclick="showCircuit('${circuit.id}')">
+          <div class="fuse-num">#${circuit.breaker}</div>
+          <div class="fuse-amps">${circuit.amps}A</div>
+          <div class="fuse-desc">${desc}</div>
+        </div>
+      `;
+    }
+
+    function renderEmptyFuse(num) {
+      return `
+        <div class="fuse empty">
+          <div class="fuse-num">#${num}</div>
+          <div class="fuse-amps">--</div>
+          <div class="fuse-desc">Empty</div>
+        </div>
+      `;
+    }
+
+    function renderBreakerPanelLayout(panel, property) {
       const totalSpaces = panel.total_spaces || 24;
       const rows = totalSpaces / 2;
 

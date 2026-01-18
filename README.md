@@ -4,11 +4,11 @@ Circuit documentation for residential properties. Anonymous property codes prote
 
 ## Properties
 
-| Code | Panels | Status |
-|------|--------|--------|
-| 28 | TBD | Not started |
-| 14 | TBD | Not started |
-| 17 | TBD | Not started |
+| Code | Type | Panels | Status |
+|------|------|--------|--------|
+| 28 | Breaker | 1 panel | Sample data |
+| 14 | Fuse | 3 fuse boxes | Not started |
+| 17 | Breaker | TBD | Not started |
 
 ## Quick Links
 
@@ -38,11 +38,22 @@ Property (28, 14, 17)
 
 | Field | Description |
 |-------|-------------|
+| type | Panel type: `breaker` (default) or `fuse` |
 | manufacturer | Panel brand (Square D, Siemens, Eaton, etc.) |
 | model | Model number from panel label |
 | series | Product line (QO, Homeline, etc.) |
-| total_spaces | Number of breaker slots |
+| total_spaces | Number of breaker slots or fuse positions |
 | bus_rating | Bus bar amperage rating |
+| fuse_type | For fuse boxes: Edison, Type-S, Cartridge |
+
+### Fuse Box Support
+
+Properties with older electrical systems may have fuse boxes instead of breaker panels. Set `type: "fuse"` on the panel to enable:
+
+- Round fuse visual representation in Layout view
+- "FUSE BOX" badge in Schedule view
+- Safety warning about matching fuse amperage
+- Fuse-specific terminology throughout the app
 
 ### Circuit Fields
 

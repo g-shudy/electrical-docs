@@ -68,6 +68,9 @@
       `;
 
       for (const panel of panelsToShow) {
+        const isFuseBox = panel.type === 'fuse';
+        const deviceType = isFuseBox ? 'Fuse' : 'Slot';
+
         let panelMeta = `<strong>Location:</strong> ${panel.location || 'TBD'} &bull;
             <strong>Capacity:</strong> ${panel.amps || '?'}A &bull;
             <strong>Fed from:</strong> ${panel.fed_from || 'TBD'}`;
@@ -82,27 +85,35 @@
           panelMeta += ` &bull; <strong>Spaces:</strong> ${panel.total_spaces}`;
         }
 
+        if (isFuseBox && panel.fuse_type) {
+          panelMeta += ` &bull; <strong>Fuse Type:</strong> ${panel.fuse_type}`;
+        }
+
+        const typeBadge = isFuseBox
+          ? '<span style="background: #fbbf24; color: #000; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600; margin-left: 0.5rem;">FUSE BOX</span>'
+          : '';
+
         html += `
-          <h2>${panel.name} (${panel.id})</h2>
+          <h2>${panel.name} (${panel.id})${typeBadge}</h2>
           <div class="panel-info">${panelMeta}</div>
         `;
 
         if (panel.circuits.length === 0) {
-          html += `<p>No circuits documented yet.</p>`;
+          html += `<p>No ${isFuseBox ? 'fuses' : 'circuits'} documented yet.</p>`;
           continue;
         }
 
-        // Sort by breaker number
+        // Sort by breaker/fuse number
         const sortedCircuits = [...panel.circuits].sort((a, b) => a.breaker - b.breaker);
 
         html += `
           <table class="panel-schedule">
             <thead>
               <tr>
-                <th>Slot</th>
+                <th>${deviceType}</th>
                 <th>A</th>
                 <th>Description</th>
-                <th>Prot</th>
+                <th>${isFuseBox ? 'Notes' : 'Prot'}</th>
               </tr>
             </thead>
             <tbody>
@@ -112,13 +123,14 @@
           const protection = circuit.protection === 'None' ? '' : circuit.protection || '';
           const critical = circuit.critical ? ' *' : '';
           const slotDisplay = circuit.slots || circuit.breaker;
+          const lastCol = isFuseBox ? (circuit.notes ? '...' : '') : protection;
 
           html += `
             <tr onclick="window.location='lookup.html?c=${circuit.id}'" style="cursor: pointer;">
               <td class="breaker-num">${slotDisplay}</td>
               <td>${circuit.amps}</td>
               <td>${circuit.description}${critical}</td>
-              <td>${protection}</td>
+              <td>${lastCol}</td>
             </tr>
           `;
         }

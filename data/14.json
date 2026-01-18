@@ -3,7 +3,47 @@
   "name": "Property 14",
   "service_size": null,
   "last_audit": null,
-  "notes": "",
-  "panels": [],
+  "notes": "Multiple fuse boxes - older electrical system",
+  "panels": [
+    {
+      "id": "M",
+      "name": "Main Fuse Box",
+      "type": "fuse",
+      "location": null,
+      "amps": null,
+      "fed_from": "Utility",
+      "total_spaces": null,
+      "manufacturer": null,
+      "model": null,
+      "fuse_type": null,
+      "circuits": []
+    },
+    {
+      "id": "F2",
+      "name": "Fuse Box 2",
+      "type": "fuse",
+      "location": null,
+      "amps": null,
+      "fed_from": "M",
+      "total_spaces": null,
+      "manufacturer": null,
+      "model": null,
+      "fuse_type": null,
+      "circuits": []
+    },
+    {
+      "id": "F3",
+      "name": "Fuse Box 3",
+      "type": "fuse",
+      "location": null,
+      "amps": null,
+      "fed_from": "M",
+      "total_spaces": null,
+      "manufacturer": null,
+      "model": null,
+      "fuse_type": null,
+      "circuits": []
+    }
+  ],
   "maintenance": []
 }
