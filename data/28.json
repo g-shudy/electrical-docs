@@ -19,7 +19,9 @@
           "amps": 15,
           "poles": 1,
           "description": "Example - Living Room Lights",
-          "rooms": ["LIV"],
+          "rooms": [
+            "LIV"
+          ],
           "wire": "14/2",
           "protection": "AFCI",
           "type": "General",
@@ -34,7 +36,9 @@
           "amps": 20,
           "poles": 1,
           "description": "Example - Kitchen Refrigerator",
-          "rooms": ["KIT"],
+          "rooms": [
+            "KIT"
+          ],
           "wire": "12/2",
           "protection": "None",
           "type": "Dedicated",
@@ -42,6 +46,23 @@
           "smart_neutral": false,
           "verified": null,
           "notes": "Dedicated circuit - sample data"
+        },
+        {
+          "id": "28-M-3",
+          "breaker": 3,
+          "amps": 20,
+          "poles": 1,
+          "description": "Kitchen Stuff",
+          "rooms": [
+            "KIT",
+            "DIN"
+          ],
+          "wire": "12/2",
+          "protection": "None",
+          "type": "General",
+          "critical": false,
+          "notes": "Testy test test",
+          "verified": "2026-01-18"
         }
       ]
     }
